@@ -1,0 +1,9 @@
+/* SEARCH RESULTS */
+.search-result { margin-bottom:15px; }
+	.search-title { font-weight:bold; }
+	.search-meta { vertical-align:middle;font-style:italic; }
+		.search-domain {  }
+			.search-domain img { vertical-align:middle; }
+		.search-date { }
+	.search-summary { }
+	.search-footer { }
