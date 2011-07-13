@@ -7,9 +7,9 @@
 	<cfset stMeta.typename = request.stObj.typename />
 	<cfset stMeta.objectid = request.stObj.objectid />
 	<cfif structkeyexists(request.stObj,"publishDate")>
-		<cfset stMeta.publishdate = "#dateformat(request.stObj.publishDate,'dd mmm yyyy')#" />
+		<cfset stMeta.publishdate = "#dateformat(request.stObj.publishDate,'yyyymmdd')#" />
 	<cfelse>
-		<cfset stMeta.publishdate = "#dateformat(request.stObj.datetimecreated,'dd mmm yyyy')#" />
+		<cfset stMeta.publishdate = "#dateformat(request.stObj.datetimecreated,'yyyymmdd')#" />
 	</cfif>
 	
 	<cfset o = application.fapi.getContentType(request.stObj.typename) />
