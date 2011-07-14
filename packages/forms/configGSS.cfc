@@ -1,12 +1,32 @@
-<cfcomponent displayname="Google Custom Search" extends="farcry.core.packages.forms.forms" output="false" hint="" key="gss">
+<cfcomponent displayname="Google Site Search" extends="farcry.core.packages.forms.forms" output="false" hint="" key="gss">
 	
-	<cfproperty ftSeq="1" ftFieldset="API Access" name="id" type="string" ftLabel="Search Engine Unique ID" ftHint="Copy this from the Basics area of your search engine's <a href='http://www.google.com/cse/manage/all'>control panel</a>" />
-	<cfproperty ftSeq="2" ftFieldset="API Access" name="key" type="string" ftLabel="API Access Key" ftHint="Create/retrieve the access key from the <a href='https://code.google.com/apis/console/'>Google APIs Console</a>, in the API Access area." />
+<!--- 
+ // Config Properties
+--------------------------------------------------------------------------------------------------->
+	<cfproperty 
+		name="id" type="string" 
+		ftSeq="1" ftFieldset="API Access" ftLabel="Search Engine Unique ID" 
+		ftHint="Copy this from the Basics area of your search engine's <a href='http://www.google.com/cse/manage/all'>control panel</a>" />
 	
-	<cfproperty ftSeq="11" ftFieldset="Search Options" name="domain" type="string" ftLabel="Site Search" ftHint="Restrict results to this domain" />
-	<cfproperty ftSeq="12" ftFieldset="Search Options" name="types" type="string" ftLabel="Type Filters" ftHint="Add type filters, so that a user can restrict their search to particular content" ftType="list" ftListData="getTypes" ftSelectMultiple="true" />
+	<cfproperty 
+		name="key" type="string" 
+		ftSeq="2" ftFieldset="API Access" ftLabel="API Access Key" 
+		ftHint="Create/retrieve the access key from the <a href='https://code.google.com/apis/console/'>Google APIs Console</a>, in the API Access area." />
 	
+	<cfproperty 
+		name="domain" type="string" 
+		ftSeq="11" ftFieldset="Search Options" ftLabel="Site Search" 
+		ftHint="Nominate a single domain to restrict search results to; useful if you manage many websites under a single GSS index." />
+		
+	<cfproperty 
+		name="types" type="string" 
+		ftSeq="12" ftFieldset="Search Options" ftLabel="Type Filters" 
+		ftHint="Add content type filters. Allows users to restrict their search to specific content types." 
+		ftType="list" ftListData="getTypes" ftSelectMultiple="true" />
 	
+<!--- 
+ // Config Functions
+--------------------------------------------------------------------------------------------------->	
 	<cffunction name="getTypes" access="public" output="false" returntype="query">
 		<cfset var qResult = querynew("value,name,order","varchar,varchar,integer") />
 		<cfset var k = "" />
