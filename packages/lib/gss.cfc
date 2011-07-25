@@ -205,25 +205,61 @@
 		<cfset var stResult = structnew() />
 		<cfset var stReturn = structnew() />
 		<cfset var i = 0 />
+		<cfset var j = 0 />
 		<cfset var start = round((arguments.page-1) * arguments.pagesize) + 1 />
 		<cfset var reskey = "" />
 		<cfset var subkey = "" />
 		<cfset var st = structnew() />
 		
-		<cfset stResult = apiRequest(url="https://www.googleapis.com/customsearch/v1",key=arguments.key,cx=arguments.id,q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=round(arguments.pagesize),start=start) />
-		
-		<cfset stReturn.results = arraynew(1) />
-		<cfset stReturn.total = stResult.queries.request[1].totalResults />
-		
-		<cfif structkeyexists(stResult,"items")>
-			<cfloop from="1" to="#arraylen(stResult.items)#" index="i">
-				<cfset st = duplicate(stResult.items[i]) />
-				<cfif structkeyexists(st,"pagemap")>
-					<cfset structappend(st,st.pagemap.metatags[1],false) />
-					<cfset st.pagemap = st.pagemap.metatags[1] />
-				</cfif>
-				<cfset arrayappend(stReturn.results,st) />
-			</cfloop>
+		<cfif len(arguments.key)>
+			<cfset stResult = apiRequest(url="https://www.googleapis.com/customsearch/v1",key=arguments.key,cx=arguments.id,q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=round(arguments.pagesize),start=start) />
+			
+			<cfset stReturn.results = arraynew(1) />
+			<cfset stReturn.total = stResult.queries.request[1].totalResults />
+			
+			<cfif structkeyexists(stResult,"items")>
+				<cfloop from="1" to="#arraylen(stResult.items)#" index="i">
+					<cfset st = duplicate(stResult.items[i]) />
+					<cfif structkeyexists(st,"pagemap")>
+						<cfset structappend(st,st.pagemap.metatags[1],false) />
+						<cfset st.pagemap = st.pagemap.metatags[1] />
+					</cfif>
+					<cfloop collection="st" item="j">
+						<cfif find("date",st[j]) and refind("\d{4}[01]\d[0123]\d",st[j])>
+							<cfset st[j] = createdate(left(st[j],4),mid(st[j],5,2),right(st[j],2)) />
+						</cfif>
+					</cfloop>
+					<cfset arrayappend(stReturn.results,st) />
+				</cfloop>
+			</cfif>
+		<cfelse>
+			<cfset stResult = apiRequest(url="https://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=round(arguments.pagesize),start=start) />
+			
+			<cfset stReturn.results = arraynew(1) />
+			<cfset stReturn.total = 0 />
+			
+			<cfif structkeyexists(stResult.gsp,"res") and structkeyexists(stResult.gsp.res,"r")>
+				<cfset stReturn.total = arraylen(stResult.gsp.res.r) />
+				<cfloop from="1" to="#arraylen(stResult.gsp.res.r)#" index="i">
+					<cfset st = structnew() />
+					<cfset st.link = stResult.gsp.res.r[i].u.xmlText />
+					<cfset st.displaylink = rereplacenocase(stResult.gsp.res.r[i].u.xmlText,"^https?\:\/\/([^\/]*)\/.*$","\1") />
+					<cfset st.htmltitle = stResult.gsp.res.r[i].t.xmlText />
+					<cfset st.htmlsnippet = stResult.gsp.res.r[i].s.xmlText />
+					<cfif structkeyexists(stResult.gsp.res.r[i],"PageMap") and structkeyexists(stResult.gsp.res.r[i].PageMap,"DataObject")>
+						<cfloop from="1" to="#arraylen(stResult.gsp.res.r[i].PageMap.DataObject.Attribute)#" index="j">
+							<cfif not structkeyexists(st,stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name)>
+								<cfif find("date",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name) and refind("\d{4}[01]\d[0123]\d",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value)>
+									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = createdate(left(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,4),mid(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,5,2),right(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,2)) />
+								<cfelse>
+									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value />
+								</cfif>
+							</cfif>
+						</cfloop>
+					</cfif>
+					<cfset arrayappend(stReturn.results,st) />
+				</cfloop>
+			</cfif>
 		</cfif>
 		
 		<cfreturn stReturn />

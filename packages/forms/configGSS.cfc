@@ -11,7 +11,7 @@
 	<cfproperty 
 		name="key" type="string" 
 		ftSeq="2" ftFieldset="API Access" ftLabel="API Access Key" 
-		ftHint="Create/retrieve the access key from the <a href='https://code.google.com/apis/console/'>Google APIs Console</a>, in the API Access area." />
+		ftHint="Do not provide an API key if you are using Google Site Search. If you wish to access your search engine through the Google API, create/retrieve the access key from the <a href='https://code.google.com/apis/console/'>Google APIs Console</a>, in the API Access area." />
 	
 	<cfproperty 
 		name="domain" type="string" 
