@@ -5,7 +5,9 @@
 <!---NOTE: dont't pick up type view calls or form calls without datetimecreated (ie library pickers)--->
 <cfif 	structkeyexists(request,"stObj") AND 
 		structkeyexists(request.stobj,"datetimecreated") AND
-		NOT request.stObj.typename eq "farCOAPI">
+		NOT request.stObj.typename eq "farCOAPI" AND
+		NOT (structKeyExists(url, "view") AND url.view eq "displayLibraryTabs")
+		>
 
 	<cfset stMeta = structnew() />
 	<cfset stMeta.typename = request.stObj.typename />
