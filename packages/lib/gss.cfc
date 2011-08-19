@@ -239,7 +239,7 @@
 			<cfset stReturn.total = 0 />
 			
 			<cfif structkeyexists(stResult.gsp,"res") and structkeyexists(stResult.gsp.res,"r")>
-				<cfset stReturn.total = arraylen(stResult.gsp.res.r) />
+				<cfset stReturn.total = stResult.gsp.res.m.xmlText />
 				<cfloop from="1" to="#arraylen(stResult.gsp.res.r)#" index="i">
 					<cfset st = structnew() />
 					<cfset st.link = stResult.gsp.res.r[i].u.xmlText />
@@ -251,7 +251,7 @@
 							<cfif not structkeyexists(st,stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name)>
 								<cfif find("date",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name) and refind("\d{4}[01]\d[0123]\d",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value)>
 									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = createdate(left(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,4),mid(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,5,2),right(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,2)) />
-								<cfelse>
+								<cfelseif structkeyexists(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes,"value")>
 									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value />
 								</cfif>
 							</cfif>
