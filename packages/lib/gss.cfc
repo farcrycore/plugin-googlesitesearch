@@ -212,13 +212,13 @@
 		<cfset var st = structnew() />
 		
 		<cfif len(arguments.key)>
-			<cfset stResult = apiRequest(url="https://www.googleapis.com/customsearch/v1",key=arguments.key,cx=arguments.id,q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=round(arguments.pagesize),start=start) />
+			<cfset stResult = apiRequest(url="https://www.googleapis.com/customsearch/v1",key=arguments.key,cx=arguments.id,q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=arguments.pagesize*10,start=start) />
 			
 			<cfset stReturn.results = arraynew(1) />
-			<cfset stReturn.total = stResult.queries.request[1].totalResults />
+			<cfset stReturn.total = min(stResult.queries.request[1].totalResults,arraylen(stResult.items) + arguments.page * arguments.pagesize) />
 			
 			<cfif structkeyexists(stResult,"items")>
-				<cfloop from="1" to="#arraylen(stResult.items)#" index="i">
+				<cfloop from="1" to="#min(arguments.pagesize,arraylen(stResult.items))#" index="i">
 					<cfset st = duplicate(stResult.items[i]) />
 					<cfif structkeyexists(st,"pagemap")>
 						<cfset structappend(st,st.pagemap.metatags[1],false) />
@@ -233,14 +233,14 @@
 				</cfloop>
 			</cfif>
 		<cfelse>
-			<cfset stResult = apiRequest(url="https://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=round(arguments.pagesize),start=start) />
+			<cfset stResult = apiRequest(url="https://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=arguments.pagesize*10,start=start) />
 			
 			<cfset stReturn.results = arraynew(1) />
 			<cfset stReturn.total = 0 />
 			
 			<cfif structkeyexists(stResult.gsp,"res") and structkeyexists(stResult.gsp.res,"r")>
-				<cfset stReturn.total = stResult.gsp.res.m.xmlText />
-				<cfloop from="1" to="#arraylen(stResult.gsp.res.r)#" index="i">
+				<cfset stReturn.total = min(stResult.gsp.res.m.xmlText,arraylen(stResult.gsp.res.r) + arguments.page * arguments.pagesize) />
+				<cfloop from="1" to="#min(arraylen(stResult.gsp.res.r),arguments.pagesize)#" index="i">
 					<cfset st = structnew() />
 					<cfset st.link = stResult.gsp.res.r[i].u.xmlText />
 					<cfset st.displaylink = rereplacenocase(stResult.gsp.res.r[i].u.xmlText,"^https?\:\/\/([^\/]*)\/.*$","\1") />
