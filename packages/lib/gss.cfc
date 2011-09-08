@@ -76,7 +76,7 @@
 		<cfif cfhttp.statuscode eq "401 Unauthorized" or cfhttp.statuscode eq "403 Forbidden">
 			<cfthrow message="Invalid authorisation details" />
 		<cfelseif not cfhttp.statuscode eq "200 OK">
-			<cfdump var="#arguments.url#"><cfoutput>#cfhttp.filecontent#"></cfoutput><cfdump var="#cfhttp#"><cfabort><cfthrow message="Error accessing Google API: #cfhttp.statuscode#" />
+			<cfdump var="#arguments.url#"><cfoutput>#cfhttp.filecontent#"></cfoutput><cfdump var="#cfhttp#"><cfthrow message="Error accessing Google API: #cfhttp.statuscode#" />
 		<cfelseif isxml(cfhttp.filecontent)>
 			<cfset stResult = xmlparse(cfhttp.filecontent) />
 		<cfelseif isjson(cfhttp.filecontent)>
@@ -249,7 +249,7 @@
 					<cfif structkeyexists(stResult.gsp.res.r[i],"PageMap") and structkeyexists(stResult.gsp.res.r[i].PageMap,"DataObject")>
 						<cfloop from="1" to="#arraylen(stResult.gsp.res.r[i].PageMap.DataObject.Attribute)#" index="j">
 							<cfif not structkeyexists(st,stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name)>
-								<cfif find("date",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name) and refind("\d{4}[01]\d[0123]\d",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value)>
+								<cfif find("date",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name) and refind("^\d{4}[01]\d[0123]\d$",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value)>
 									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = createdate(left(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,4),mid(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,5,2),right(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,2)) />
 								<cfelseif structkeyexists(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes,"value")>
 									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value />

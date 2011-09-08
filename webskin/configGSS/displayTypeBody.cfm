@@ -43,12 +43,18 @@
 	
 	<cfif stLocal.result.total>
 		<skin:pagination typename="configGSS" array="#stLocal.result.results#" currentpage="#url.page#" totalrecords="#stLocal.result.total#" paginationid="" r_stObject="stLocal.r">
+
+			<cftry>
+
 			<cfset stLocal.r = stLocal.r.objectid />
 			<cfif structkeyexists(stLocal.r,"typename")>
 				<skin:view typename="#stLocal.r.typename#" webskin="displaySearchResult" gss="#stLocal.r#" />
 			<cfelse>
 				<skin:view typename="configGSS" webskin="displaySearchResult" gss="#stLocal.r#" />
 			</cfif>
+			
+			<cfcatch><cfdump var="#cfcatch#"></cfcatch>
+			</cftry>
 		</skin:pagination>
 	</cfif>
 </cfoutput>
