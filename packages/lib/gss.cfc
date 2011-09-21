@@ -44,7 +44,6 @@
 		<cfset var cfhttp = structnew() />
 		<cfset var stResult = structnew() />
 		<cfset var method = "GET" />
-		<cfset var qs = "" />
 		<cfset var qsk = "" />
 		
 		<cfif not structkeyexists(arguments,"auth") or not len(arguments.auth)>
@@ -54,23 +53,16 @@
 		<cfif len(arguments.body)>
 			<cfset method = "POST" />
 		</cfif>
-		
-		<cfloop collection="#arguments#" item="qsk">
-			<cfif not listcontainsnocase("auth,url,body",qsk)>
-				<cfset qs = listappend(qs,"#lcase(qsk)#=#arguments[qsk]#","&") />
-			</cfif>
-		</cfloop>
-		<cfif len(qs)>
-			<cfif find("?",arguments.url)>
-				<cfset arguments.url = "#arguments.url#&#qs#" />
-			<cfelse>
-				<cfset arguments.url = "#arguments.url#?#qs#" />
-			</cfif>
-		</cfif>
-		
+
 		<cfhttp url="#arguments.url#" method="#method#">
 			<cfif len(arguments.auth)><cfhttpparam type="header" name="Authorization" value="GoogleLogin auth=#arguments.auth#" /></cfif>
 			<cfif len(arguments.body)><cfhttpparam type="body" value="#trim(arguments.body)#" /></cfif>
+			<!--- add remaining arguments as http params --->
+			<cfloop collection="#arguments#" item="qsk">
+				<cfif not listcontainsnocase("auth,url,body",qsk)>
+					<cfhttpparam type="url" name="#lcase(qsk)#" value="#arguments[qsk]#" />
+				</cfif>
+			</cfloop>
 		</cfhttp>
 		
 		<cfif cfhttp.statuscode eq "401 Unauthorized" or cfhttp.statuscode eq "403 Forbidden">
@@ -233,7 +225,7 @@
 				</cfloop>
 			</cfif>
 		<cfelse>
-			<cfset stResult = apiRequest(url="https://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=arguments.pagesize*10,start=start) />
+			<cfset stResult = apiRequest(url="https://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=arguments.query,num=arguments.pagesize*10,start=start) />
 			
 			<cfset stReturn.results = arraynew(1) />
 			<cfset stReturn.total = 0 />
