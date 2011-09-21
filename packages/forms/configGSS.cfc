@@ -12,6 +12,12 @@
 		name="key" type="string" 
 		ftSeq="2" ftFieldset="API Access" ftLabel="API Access Key" 
 		ftHint="Do not provide an API key if you are using Google Site Search. If you wish to access your search engine through the Google API, create/retrieve the access key from the <a href='https://code.google.com/apis/console/'>Google APIs Console</a>, in the API Access area." />
+
+	<cfproperty 
+		name="searchtypes" type="string" 
+		ftSeq="6" ftFieldset="Global Criteria" ftLabel="Searchable Types" 
+		ftHint="Select the content types that will be searchable via Google Site Search. Content types which are not selected will not appear in search results.<br>Note: If 'None' is selected then ALL content types will be searchable." 
+		ftType="list" ftListData="getTypes" ftSelectMultiple="true" ftStyle="height: 150px;" />
 	
 	<cfproperty 
 		name="domain" type="string" 
@@ -77,15 +83,37 @@
 		<cfargument name="query" type="string" required="true" hint="The user submitted query" />
 		<cfargument name="subset" type="string" required="true" hint="The subset to add to the query" />
 		<cfargument name="bSiteSearch" type="boolean" required="false" default="true" hint="Restrict to the configured domain" />
+
+		<cfset var i = "">
+		<cfset var typeFilterCriteria = "">
+
+		<!--- if subset is an empty string, use the global defaults to filter by --->
+		<cfif NOT len(arguments.subset)>
+
+			<!--- get the list of globally allowed search types --->
+			<cfif listlen(application.config.gss.searchtypes)>
+				<!--- build type filtering criteria list --->
+				<cfloop from="1" to="#listLen(application.config.gss.searchtypes)#" index="i">
+					<cfset typeFilterCriteria = typeFilterCriteria & "more:pagemap:metatags-typename:#listGetAt(application.config.gss.searchtypes, i)#">
+					<cfif i neq listLen(application.config.gss.searchtypes)>
+						<cfset typeFilterCriteria = typeFilterCriteria & " OR ">
+					</cfif>
+				</cfloop>
+
+				<!--- wrap criteria in parentheses --->
+				<cfset typeFilterCriteria = "(" & typeFilterCriteria & ")">
+				<!--- append to search query --->
+				<cfset arguments.query = listappend(arguments.query,"#typeFilterCriteria#"," ") />
+			</cfif>
 		
-		<cfif len(arguments.subset) and listcontains(application.config.gss.types,arguments.subset)>
+		<cfelseif len(arguments.subset) and listcontains(application.config.gss.types,arguments.subset)>
 			<cfset arguments.query = listappend(arguments.query,"more:pagemap:metatags-typename:#arguments.subset#"," ") />
 		</cfif>
 		
 		<cfif arguments.bSiteSearch and len(application.config.gss.domain)>
 			<cfset arguments.query = listappend(arguments.query,"site:#application.config.gss.domain#"," ") />
 		</cfif>
-		
+
 		<cfreturn arguments.query />
 	</cffunction>
 	
