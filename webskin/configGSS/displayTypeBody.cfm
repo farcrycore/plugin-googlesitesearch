@@ -25,6 +25,10 @@
 
 <cfset stLocal.qSubsets = getSubsets() />
 
+<cfif isdefined("application.fc.lib.ga")>
+	<cfset application.fc.lib.ga.setTrackableURL(url=application.fapi.fixURL(removevalues='page,furl')) />
+</cfif>
+
 <skin:loadCSS id="googlesitesearch" />
 
 <cfoutput>
