@@ -225,7 +225,7 @@
 				</cfloop>
 			</cfif>
 		<cfelse>
-			<cfset stResult = apiRequest(url="https://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=arguments.query,num=arguments.pagesize*10,start=start) />
+			<cfset stResult = apiRequest(url="http://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=arguments.query,num=arguments.pagesize*10,start=start) />
 			
 			<cfset stReturn.results = arraynew(1) />
 			<cfset stReturn.total = 0 />
