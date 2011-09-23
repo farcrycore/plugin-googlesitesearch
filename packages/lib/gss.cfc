@@ -203,6 +203,9 @@
 		<cfset var subkey = "" />
 		<cfset var st = structnew() />
 		
+		<!--- always exclude "incomplete" objects --->
+		<cfset arguments.query = listappend(arguments.query,'-"(incomplete)"'," ") />
+
 		<cfif len(arguments.key)>
 			<cfset stResult = apiRequest(url="https://www.googleapis.com/customsearch/v1",key=arguments.key,cx=arguments.id,q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=arguments.pagesize*10,start=start) />
 			
