@@ -109,6 +109,9 @@
 		<cfelseif len(arguments.subset) and listcontains(application.config.gss.types,arguments.subset)>
 			<cfset arguments.query = listappend(arguments.query,"more:pagemap:metatags-typename:#arguments.subset#"," ") />
 		</cfif>
+
+		<!--- always filter out pages marked as not searchable --->
+		<cfset arguments.query = listappend(arguments.query,"-more:pagemap:metatags-searchable:false"," ") />
 		
 		<cfif arguments.bSiteSearch and len(application.config.gss.domain)>
 			<cfset arguments.query = listappend(arguments.query,"site:#application.config.gss.domain#"," ") />
