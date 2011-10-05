@@ -1,4 +1,4 @@
-<cfcomponent displayname="Google Site Search" extends="farcry.core.packages.forms.forms" output="false" hint="" key="gss">
+<cfcomponent displayname="Google Site Search" extends="farcry.core.packages.forms.forms" output="false" hint="" key="gss" fuAlias="sitesearch">
 	
 <!--- 
  // Config Properties
@@ -83,9 +83,19 @@
 		<cfargument name="query" type="string" required="true" hint="The user submitted query" />
 		<cfargument name="subset" type="string" required="true" hint="The subset to add to the query" />
 		<cfargument name="bSiteSearch" type="boolean" required="false" default="true" hint="Restrict to the configured domain" />
-
+		<cfargument name="queryType" type="string" required="false" default="any" hint="any, all, phrase" />
+		
 		<cfset var i = "">
 		<cfset var typeFilterCriteria = "">
+		
+		<cfswitch expression="#arguments.query#">
+			<cfcase value="all">
+				<cfset arguments.query = rereplace(arguments.query,"(^|\s+)\b","+\1","ALL") />
+			</cfcase>
+			<cfcase value="phrase">
+				<cfset arguments.query = '"#arguments.query#"' />
+			</cfcase>
+		</cfswitch>
 
 		<!--- if subset is an empty string, use the global defaults to filter by --->
 		<cfif NOT len(arguments.subset)>
