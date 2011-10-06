@@ -40,7 +40,6 @@
 	
 	<cfif stLocal.qSubsets.recordcount gt 1>
 		<ft:field label="Filter to">
-			<cfoutput><div id="search-filters">Filter to:</cfoutput>
 			<skin:view typename="configGSS" webskin="displaySubsets" displayStyle="aLink" bActive="true" bFirst="true" bSpan="true" />
 		</ft:field>
 	</cfif>
