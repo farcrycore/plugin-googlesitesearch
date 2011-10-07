@@ -45,6 +45,7 @@
 		<cfset var stResult = structnew() />
 		<cfset var method = "GET" />
 		<cfset var qsk = "" />
+		<cfset var logURL = arguments.url />
 		
 		<cfif not structkeyexists(arguments,"auth") or not len(arguments.auth)>
 			<cfset arguments.auth = getAuthToken() />
@@ -61,9 +62,18 @@
 			<cfloop collection="#arguments#" item="qsk">
 				<cfif not listcontainsnocase("auth,url,body",qsk)>
 					<cfhttpparam type="url" name="#lcase(qsk)#" value="#arguments[qsk]#" />
+					<cfif find("?",logURL)>
+						<cfset logURL = listappend(logURL,"#lcase(qsk)#=#rereplace(urlencodedformat(arguments[qsk]),'( |%20)','+','ALL')#","&") />
+					<cfelse>
+						<cfset logURL = listappend(logURL,"#lcase(qsk)#=#rereplace(urlencodedformat(arguments[qsk]),'( |%20)','+','ALL')#","?") />
+					</cfif>
 				</cfif>
 			</cfloop>
 		</cfhttp>
+		
+		<cfif isdefined("application.config.gss.log") and application.config.gss.log>
+			<cflog file="gss" text="#logURL#" />
+		</cfif>
 		
 		<cfif cfhttp.statuscode eq "401 Unauthorized" or cfhttp.statuscode eq "403 Forbidden">
 			<cfthrow message="Invalid authorisation details" />
@@ -193,6 +203,7 @@
 		<cfargument name="domain" type="string" required="false" default="#application.config.gss.domain#" hint="Restrict results to this domain" />
 		<cfargument name="page" type="numeric" required="false" default="1" />
 		<cfargument name="pagesize" type="numeric" required="false" default="10" />
+		<cfargument name="sort" type="string" required="false" default="" />
 		
 		<cfset var stResult = structnew() />
 		<cfset var stReturn = structnew() />
@@ -204,17 +215,25 @@
 		<cfset var st = structnew() />
 		
 		<!--- always exclude "incomplete" objects --->
-		<cfset arguments.query = listappend(arguments.query,'-"(incomplete)"'," ") />
-
+		<cfset stReturn.query = listappend(arguments.query,'-"(incomplete)"'," ") />
+		
+		<cfset stReturn.request = application.fapi.structcreate(q=stReturn.query,cx=arguments.id,num=arguments.pagesize*10,start=start) />
+		<cfif len(arguments.sort)>
+			<cfset stReturn.request.sort = arguments.sort />
+		</cfif>
+		
 		<cfif len(arguments.key)>
-			<cfset stResult = apiRequest(url="https://www.googleapis.com/customsearch/v1",key=arguments.key,cx=arguments.id,q=rereplace(urlencodedformat(arguments.query),'( |%20)','+','ALL'),num=arguments.pagesize*10,start=start) />
+			<cfset stReturn.request.url = "https://www.googleapis.com/customsearch/v1" />
+			<cfset stReturn.request.key = arguments.key />
+			
+			<cfset stReturn.xml = apiRequest(argumentCollection=stReturn.request) />
 			
 			<cfset stReturn.results = arraynew(1) />
-			<cfset stReturn.total = min(stResult.queries.request[1].totalResults,arraylen(stResult.items) + arguments.page * arguments.pagesize) />
+			<cfset stReturn.total = min(stReturn.xml.queries.request[1].totalResults,arraylen(stReturn.xml.items) + arguments.page * arguments.pagesize) />
 			
-			<cfif structkeyexists(stResult,"items")>
-				<cfloop from="1" to="#min(arguments.pagesize,arraylen(stResult.items))#" index="i">
-					<cfset st = duplicate(stResult.items[i]) />
+			<cfif structkeyexists(stReturn.xml,"items")>
+				<cfloop from="1" to="#min(arguments.pagesize,arraylen(stReturn.xml.items))#" index="i">
+					<cfset st = duplicate(stReturn.xml.items[i]) />
 					<cfif structkeyexists(st,"pagemap")>
 						<cfset structappend(st,st.pagemap.metatags[1],false) />
 						<cfset st.pagemap = st.pagemap.metatags[1] />
@@ -228,26 +247,31 @@
 				</cfloop>
 			</cfif>
 		<cfelse>
-			<cfset stResult = apiRequest(url="http://www.google.com/search",client="google-csbe",cx=arguments.id,output="xml_no_dtd",q=arguments.query,num=arguments.pagesize*10,start=start) />
+			<cfset stReturn.request.url = "http://www.google.com/search" />
+			<cfset stReturn.request.client = "google-csbe" />
+			<cfset stReturn.request.output = "xml_no_dtd" />
+			
+			<cfset stReturn.xml = apiRequest(argumentCollection=stReturn.request) />
 			
 			<cfset stReturn.results = arraynew(1) />
 			<cfset stReturn.total = 0 />
 			
-			<cfif structkeyexists(stResult.gsp,"res") and structkeyexists(stResult.gsp.res,"r")>
-				<cfset stReturn.total = min(stResult.gsp.res.m.xmlText,arraylen(stResult.gsp.res.r) + arguments.page * arguments.pagesize) />
-				<cfloop from="1" to="#min(arraylen(stResult.gsp.res.r),arguments.pagesize)#" index="i">
+			<cfif structkeyexists(stReturn.xml.gsp,"res") and structkeyexists(stReturn.xml.gsp.res,"r")>
+				<cfset stReturn.total = min(stReturn.xml.gsp.res.m.xmlText,arraylen(stReturn.xml.gsp.res.r) + arguments.page * arguments.pagesize) />
+				<cfloop from="1" to="#min(arraylen(stReturn.xml.gsp.res.r),arguments.pagesize)#" index="i">
 					<cfset st = structnew() />
-					<cfset st.link = stResult.gsp.res.r[i].u.xmlText />
-					<cfset st.displaylink = rereplacenocase(stResult.gsp.res.r[i].u.xmlText,"^https?\:\/\/([^\/]*)\/.*$","\1") />
-					<cfset st.htmltitle = stResult.gsp.res.r[i].t.xmlText />
-					<cfset st.htmlsnippet = stResult.gsp.res.r[i].s.xmlText />
-					<cfif structkeyexists(stResult.gsp.res.r[i],"PageMap") and structkeyexists(stResult.gsp.res.r[i].PageMap,"DataObject")>
-						<cfloop from="1" to="#arraylen(stResult.gsp.res.r[i].PageMap.DataObject.Attribute)#" index="j">
-							<cfif not structkeyexists(st,stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name)>
-								<cfif find("date",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name) and refind("^\d{4}[01]\d[0123]\d$",stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value)>
-									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = createdate(left(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,4),mid(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,5,2),right(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,2)) />
-								<cfelseif structkeyexists(stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes,"value")>
-									<cfset st[stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = stResult.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value />
+					<cfset st.link = stReturn.xml.gsp.res.r[i].u.xmlText />
+					<cfset st.relativelink = rereplacenocase(stReturn.xml.gsp.res.r[i].u.xmlText,"^https?\:\/\/[^\/]*(\/.*)$","\1") />
+					<cfset st.displaylink = rereplacenocase(stReturn.xml.gsp.res.r[i].u.xmlText,"^https?\:\/\/([^\/]*)\/.*$","\1") />
+					<cfset st.htmltitle = stReturn.xml.gsp.res.r[i].t.xmlText />
+					<cfset st.htmlsnippet = stReturn.xml.gsp.res.r[i].s.xmlText />
+					<cfif structkeyexists(stReturn.xml.gsp.res.r[i],"PageMap") and structkeyexists(stReturn.xml.gsp.res.r[i].PageMap,"DataObject")>
+						<cfloop from="1" to="#arraylen(stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute)#" index="j">
+							<cfif not structkeyexists(st,stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name)>
+								<cfif find("date",stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name) and refind("^\d{4}[01]\d[0123]\d$",stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value)>
+									<cfset st[stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = createdate(left(stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,4),mid(stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,5,2),right(stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value,2)) />
+								<cfelseif structkeyexists(stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes,"value")>
+									<cfset st[stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.name] = stReturn.xml.gsp.res.r[i].PageMap.DataObject.Attribute[j].xmlAttributes.value />
 								</cfif>
 							</cfif>
 						</cfloop>

@@ -29,6 +29,12 @@
 		ftSeq="12" ftFieldset="Search Options" ftLabel="Type Filters" 
 		ftHint="Add content type filters. Allows users to restrict their search to specific content types." 
 		ftType="list" ftListData="getTypes" ftSelectMultiple="true" />
+		
+	<cfproperty
+		name="log" type="string"
+		ftSeq="21" ftFieldset="Logging" ftLabel="Enable Logging"
+		ftHint="Logs search URLs into the gss log file"
+		ftType="boolean" ftDefault="0" default="0" />
 	
 <!--- 
  // Config Functions
@@ -83,20 +89,30 @@
 		<cfargument name="query" type="string" required="true" hint="The user submitted query" />
 		<cfargument name="subset" type="string" required="true" hint="The subset to add to the query" />
 		<cfargument name="bSiteSearch" type="boolean" required="false" default="true" hint="Restrict to the configured domain" />
-		<cfargument name="queryType" type="string" required="false" default="any" hint="any, all, phrase" />
+		<cfargument name="searchtype" type="string" required="false" default="all" hint="any, all, phrase" />
+		<!--- Extra arguments are interpreted as metatag filters --->
 		
-		<cfset var i = "">
-		<cfset var typeFilterCriteria = "">
+		<cfset var i = "" />
+		<cfset var typeFilterCriteria = "" />
+		<cfset var s = "" />
 		
-		<cfswitch expression="#arguments.query#">
-			<cfcase value="all">
-				<cfset arguments.query = rereplace(arguments.query,"(^|\s+)\b","+\1","ALL") />
+		<!--- manually incorporate the search type --->
+		<cfswitch expression="#arguments.searchtype#">
+			<cfcase value="any">
+				<cfset s = "" />
+				<cfloop list="#arguments.query#" index="i" delimiters=" ">
+					<cfif len(s)>
+						<cfset s = s & " OR " />
+					</cfif>
+					<cfset s = s & i />
+				</cfloop>
+				<cfset arguments.query = s />
 			</cfcase>
 			<cfcase value="phrase">
-				<cfset arguments.query = '"#arguments.query#"' />
+				<cfset arguments.query = '"' & arguments.query & '"' />
 			</cfcase>
 		</cfswitch>
-
+		
 		<!--- if subset is an empty string, use the global defaults to filter by --->
 		<cfif NOT len(arguments.subset)>
 
@@ -109,14 +125,12 @@
 						<cfset typeFilterCriteria = typeFilterCriteria & " OR ">
 					</cfif>
 				</cfloop>
-
-				<!--- wrap criteria in parentheses --->
-				<cfset typeFilterCriteria = "(" & typeFilterCriteria & ")">
+				
 				<!--- append to search query --->
 				<cfset arguments.query = listappend(arguments.query,"#typeFilterCriteria#"," ") />
 			</cfif>
 		
-		<cfelseif len(arguments.subset) and listcontains(application.config.gss.types,arguments.subset)>
+		<cfelseif len(arguments.subset) and listfindnocase(application.config.gss.searchtypes,arguments.subset)>
 			<cfset arguments.query = listappend(arguments.query,"more:pagemap:metatags-typename:#arguments.subset#"," ") />
 		</cfif>
 
@@ -126,6 +140,13 @@
 		<cfif arguments.bSiteSearch and len(application.config.gss.domain)>
 			<cfset arguments.query = listappend(arguments.query,"site:#application.config.gss.domain#"," ") />
 		</cfif>
+		
+		<!--- Add any extra arguments as metatag filters --->
+		<cfloop collection="#arguments#" item="i">
+			<cfif not listfindnocase("query,subset,bSiteSearch,searchtype",i)>
+				<cfset arguments.query = listappend(arguments.query,"more:pagemap:metatags-#lcase(i)#:#arguments[i]#"," ") />
+			</cfif>
+		</cfloop>
 
 		<cfreturn arguments.query />
 	</cffunction>
