@@ -143,7 +143,7 @@
 		
 		<!--- Add any extra arguments as metatag filters --->
 		<cfloop collection="#arguments#" item="i">
-			<cfif not listfindnocase("query,subset,bSiteSearch,searchtype",i)>
+			<cfif not listfindnocase("query,subset,bSiteSearch,searchtype",i) and len(arguments[i])>
 				<cfset arguments.query = listappend(arguments.query,"more:pagemap:metatags-#lcase(i)#:#arguments[i]#"," ") />
 			</cfif>
 		</cfloop>
