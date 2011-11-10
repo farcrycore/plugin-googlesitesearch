@@ -129,7 +129,14 @@
 				<!--- append to search query --->
 				<cfset arguments.query = listappend(arguments.query,"#typeFilterCriteria#"," ") />
 			</cfif>
-		
+		<cfelseif listlen(arguments.subset) gt 1>
+			<cfset lSubsets = "">
+			<cfloop list="#arguments.subset#" index=i>
+				<cfif listfindnocase(application.config.gss.searchtypes,i)>
+					<cfset lSubsets = listappend(lSubsets,"more:pagemap:metatags-typename:#i#",",") />
+				</cfif>
+			</cfloop>
+			<cfset arguments.query = listappend(arguments.query,"[#replace(lsubsets,',',' OR ',"ALL")#]"," ") />
 		<cfelseif len(arguments.subset) and listfindnocase(application.config.gss.searchtypes,arguments.subset)>
 			<cfset arguments.query = listappend(arguments.query,"more:pagemap:metatags-typename:#arguments.subset#"," ") />
 		</cfif>
