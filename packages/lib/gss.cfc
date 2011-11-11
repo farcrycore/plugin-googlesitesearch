@@ -209,10 +209,14 @@
 		<cfset var stReturn = structnew() />
 		<cfset var i = 0 />
 		<cfset var j = 0 />
-		<cfset var start = round((arguments.page-1) * arguments.pagesize) + 1 />
+		<cfset var start = 0 />
 		<cfset var reskey = "" />
 		<cfset var subkey = "" />
 		<cfset var st = structnew() />
+		
+		<cfif page gt 1>
+			<cfset start = round((arguments.page-1) * arguments.pagesize)  />
+		</cfif>
 		
 		<!--- always exclude "incomplete" objects --->
 		<cfset stReturn.query = listappend(arguments.query,'-"(incomplete)"'," ") />
