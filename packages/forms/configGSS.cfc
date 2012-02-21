@@ -36,6 +36,12 @@
 		ftHint="Logs search URLs into the gss log file"
 		ftType="boolean" ftDefault="0" default="0" />
 	
+	<cfproperty 
+		name="lSitemapTypes" type="longchar" 
+		ftSeq="12" ftFieldset="Sitemap" ftLabel="Sitemap types" 
+		ftType="list" ftListData="getTypes" ftSelectMultiple="true" default="" />
+	
+	
 <!--- 
  // Config Functions
 --------------------------------------------------------------------------------------------------->	
