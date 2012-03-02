@@ -50,7 +50,7 @@
 			<cftry>
 
 			<cfset stLocal.r = stLocal.r.objectid />
-			<cfif structkeyexists(stLocal.r,"typename")>
+			<cfif structkeyexists(stLocal.r,"typename") and stLocal.r.typename neq "farCOAPI">
 				<skin:view typename="#stLocal.r.typename#" webskin="displaySearchResult" gss="#stLocal.r#" />
 			<cfelse>
 				<skin:view typename="configGSS" webskin="displaySearchResult" gss="#stLocal.r#" />
