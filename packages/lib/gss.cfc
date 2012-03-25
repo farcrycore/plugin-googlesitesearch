@@ -117,7 +117,7 @@
 		<cfset var stResult = structnew() />
 		<cfset var stSE = structnew() />
 		
-		<cfset stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/cse/#arguments.id#") />
+		<cfset stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/cse/#trim(arguments.id)#") />
 		
 		<cfset stSE.xml = stResult />
 		<cfset stSE.id = stResult.CustomSearchEngine.xmlAttributes.id />
@@ -150,7 +150,7 @@
 			 </CustomSearchEngine>
 		</cfoutput></cfsavecontent>
 		
-		<cfset stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/cse/#arguments.id#",body=xmlpost) />
+		<cfset stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/cse/#trim(arguments.id)#",body=xmlpost) />
 		
 		<cfset stSE.xml = stResult />
 		<cfset stSE.id = stResult.CustomSearchEngine.xmlAttributes.id />
@@ -175,7 +175,7 @@
 		<cfif structkeyexists(arguments,"description")><cfset stSE.xml.CustomSearchEngine.Description.xmlText = arguments.description /></cfif>
 		<cfif structkeyexists(arguments,"keywords")><cfset stSE.xml.CustomSearchEngine.xmlAttributes.keywords = arguments.keywords /></cfif>
 		
-		<cfset stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/cse/#arguments.id#",body=stSE.xml.toString()) />
+		<cfset stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/cse/#trim(arguments.id)#",body=stSE.xml.toString()) />
 		
 		<cfset stSE = structnew() />
 		<cfset stSE.xml = stResult />
@@ -191,7 +191,7 @@
 		<cfargument name="auth" type="string" required="false" default="" hint="Google authorisation token" />
 		<cfargument name="id" type="string" required="false" default="#application.config.gss.gssid#" hint="Search engine ID" />
 		
-		<cfset var stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/index/#arguments.id#") />
+		<cfset var stResult = apiRequest(auth=arguments.auth,url="http://www.google.com/cse/api/default/index/#trim(arguments.id)#") />
 		
 		<cfreturn stResult.OnDemandIndex.xmlAttributes.quota />
 	</cffunction>
@@ -221,7 +221,7 @@
 		<!--- always exclude "incomplete" objects --->
 		<cfset stReturn.query = listappend(arguments.query,'-"(incomplete)"'," ") />
 		
-		<cfset stReturn.request = application.fapi.structcreate(q=stReturn.query,cx=arguments.id,num=arguments.pagesize*10,start=start) />
+		<cfset stReturn.request = application.fapi.structcreate(q=stReturn.query,cx=trim(arguments.id),num=arguments.pagesize*10,start=start) />
 		<cfif len(arguments.sort)>
 			<cfset stReturn.request.sort = arguments.sort />
 		</cfif>
