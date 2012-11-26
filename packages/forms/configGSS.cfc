@@ -55,10 +55,10 @@
 		<cfset querysetcell(qResult,"order",0) />
 		
 		<cfloop collection="#application.stCOAPI#" item="k">
-			<cfif application.stCOAPI[k].class eq "type" and structkeyexists(application.stCOAPI[k],"displayname")>
+			<cfif application.stCOAPI[k].class eq "type" and structkeyexists(application.stCOAPI[k],"displayname") and (not structkeyexists(application.stCOAPI[k],"bSystem") or not application.stCOAPI[k].bSystem)>
 				<cfset queryaddrow(qResult) />
 				<cfset querysetcell(qResult,"value",k) />
-				<cfset querysetcell(qResult,"name",application.stCOAPI[k].displayname) />
+				<cfset querysetcell(qResult,"name","#application.stCOAPI[k].displayname# (#k#)") />
 				<cfset querysetcell(qResult,"order",1) />
 			</cfif>
 		</cfloop>
@@ -78,10 +78,10 @@
 		<cfset querysetcell(qResult,"order",0) />
 		
 		<cfloop list="#application.config.gss.types#" index="k">
-			<cfif application.stCOAPI[k].class eq "type" and structkeyexists(application.stCOAPI[k],"displayname")>
+			<cfif application.stCOAPI[k].class eq "type" and structkeyexists(application.stCOAPI[k],"displayname") and (not structkeyexists(application.stCOAPI[k],"bSystem") or not application.stCOAPI[k].bSystem)>
 				<cfset queryaddrow(qResult) />
 				<cfset querysetcell(qResult,"value",k) />
-				<cfset querysetcell(qResult,"label",application.stCOAPI[k].displayname) />
+				<cfset querysetcell(qResult,"label","#application.stCOAPI[k].displayname# (#k#)") />
 				<cfset querysetcell(qResult,"order",1) />
 			</cfif>
 		</cfloop>

@@ -17,7 +17,7 @@
 
 <cfquery datasource="#application.dsn#" name="stLocal.qURLs"><cfoutput>
 	<!--- Site tree --->
-	SELECT		'http://#cgi.http_host##application.url.webroot#' + f.friendlyurl as url,
+	SELECT		'http://#cgi.http_host##application.url.webroot#' + f.friendlyurl as url, isnull(f.bdefault,0) as hasFriendly,
 				'dmNavigation' as typename,
 				t.objectid,
 				t.datetimelastupdated as lastmod,
@@ -34,7 +34,7 @@
 				nested_tree_objects n2
 				
 	WHERE		t.status = <cfqueryparam cfsqltype="cf_sql_varchar" value="approved" />
-				AND f.bdefault = 1 
+				AND isnull(f.bdefault,1) = 1 
 				AND n2.objectid = <cfqueryparam cfsqltype="cf_sql_varchar" value="#application.navid.home#" /> <!--- n2 = home node --->
 				AND n2.nleft < n.nleft AND n.nright < n2.nright <!--- only show children of home node --->
 	
@@ -43,7 +43,7 @@
 		<cfif structkeyexists(application.stCOAPI,thistype) and not thistype eq "dmNavigation">
 			UNION ALL
 			
-			SELECT		'http://#cgi.http_host##application.url.webroot#' + f.friendlyurl as url,
+			SELECT		'http://#cgi.http_host##application.url.webroot#' + f.friendlyurl as url, isnull(f.bdefault,0) as hasFriendly,
 						'#thistype#' as typename,
 						t.objectid,
 						<cfif structkeyexists(application.stCOAPI[thistype].stProps,"publishdate")>t.publishdate<cfelse>t.datetimelastupdated</cfif> as lastmod,
@@ -52,7 +52,7 @@
 						LEFT OUTER JOIN
 						farfu f 
 						ON t.objectid = f.refobjectid
-			WHERE		f.bdefault = 1 
+			WHERE		isnull(f.bdefault,1) = 1 
 						<cfif structkeyexists(application.stCOAPI[thistype].stProps,"status")>
 							AND t.status = <cfqueryparam cfsqltype="cf_sql_varchar" value="approved" />
 						</cfif>
@@ -73,7 +73,7 @@
 	<cfset stLocal.sitemap.append('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') />
 	<cfloop query="stLocal.qURLs">
 		<cfset stLocal.sitemap.append("<url>") />
-		<cfif len(stLocal.qURLs.url)>
+		<cfif stLocal.qURLs.hasFriendly>
 			<cfset stLocal.sitemap.append("<loc>#stLocal.qURLs.url#</loc>") />
 		<cfelse>
 			<cfset stLocal.sitemap.append("<loc>http://#cgi.http_host##application.url.webroot#/index.cfm?objectid=#stLocal.qURLs.objectid#</loc>") />
