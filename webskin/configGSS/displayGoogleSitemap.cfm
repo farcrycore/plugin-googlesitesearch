@@ -135,7 +135,9 @@
 </cfif>
 
 <!--- Stream the result --->
-<CFHEADER NAME="Cache-Control" VALUE="max-age=300;s-maxage=300">
-<cfcontent type="application/xml" variable="#ToBinary( ToBase64(stLocal.sitemap.toString()) )#" reset="Yes" />
+<CFHEADER NAME="Cache-Control" VALUE="max-age=300, s-maxage=300">
+<cfcontent type="application/xml" reset="Yes" />
+<cfoutput>#stLocal.sitemap.toString()#</cfoutput>
+<cfabort>
 
 <cfsetting enablecfoutputonly="false">
