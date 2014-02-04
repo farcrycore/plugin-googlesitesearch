@@ -1,4 +1,5 @@
-<cfcomponent displayname="Google Site Search" extends="farcry.core.packages.forms.forms" output="false" hint="" key="gss" fuAlias="sitesearch">
+<cfcomponent displayname="Google Site Search" extends="farcry.core.packages.forms.forms" output="false" 
+	key="gss" fuAlias="sitesearch" hint="Configure content searching with the Google Site Seach API">
 	
 <!--- 
  // Config Properties
