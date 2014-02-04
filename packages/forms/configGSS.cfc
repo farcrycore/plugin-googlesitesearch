@@ -31,16 +31,16 @@
 		ftHint="Add content type filters. Allows users to restrict their search to specific content types." 
 		ftType="list" ftListData="getTypes" ftSelectMultiple="true" />
 		
+	<cfproperty 
+		name="lSitemapTypes" type="longchar" 
+		ftSeq="15" ftFieldset="Sitemap" ftLabel="Sitemap types" 
+		ftType="list" ftListData="getTypes" ftSelectMultiple="true" default="" />
+	
 	<cfproperty
 		name="log" type="string"
 		ftSeq="21" ftFieldset="Logging" ftLabel="Enable Logging"
-		ftHint="Logs search URLs into the gss log file"
+		ftHint="Logs search URLs into the gss.log file"
 		ftType="boolean" ftDefault="0" default="0" />
-	
-	<cfproperty 
-		name="lSitemapTypes" type="longchar" 
-		ftSeq="12" ftFieldset="Sitemap" ftLabel="Sitemap types" 
-		ftType="list" ftListData="getTypes" ftSelectMultiple="true" default="" />
 	
 	
 <!--- 
