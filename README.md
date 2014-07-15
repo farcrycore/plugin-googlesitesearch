@@ -42,16 +42,30 @@ You will need to update the plugins configuration to include your projects speci
 
 ### Add GSS code to views
 
-GSS PageMap metadata is automatically included into the HEAD of all page views.
+Done. GSS PageMap metadata is automatically included into the HEAD of all page views.
 
-### Customising the Look & Feel
+### Remove /search from robots.txt
 
-GSS plugin uses the XML API for retrieving results.
+GSS uses url parameters for search queries (better for cache management and the like). You need to exclude search results from bots so you don't blow your search quota just servicing indexing requests.
 
-Review Google API documentation for an overview: http://code.google.com/intl/en/apis/customsearch/docs/snippets.html
+```
+Disallow: /search
+```
 
-## How it works
+Read more here: http://discourse.farcrycore.org/t/google-site-search-plugin/55/2?u=modius
 
-By default, the GSS plugin refers to a universal typewebskin called ```./googleSiteSearch/webskin/types/displaySearchResult.cfm```
+## Customising the Look & Feel
 
-You can override this behaviour by creating a webskin of exactly the same name in your project. All GSS custom variables are passed to the webskin in the structure stparams.GSS
+By default, the GSS plugin refers to a universal typewebskin called 
+
+```
+./googleSiteSearch/webskin/types/displaySearchResult.cfm
+```
+
+You can override this behaviour by creating a webskin of exactly the same name in your project. 
+
+GSS plugin uses the standard XML API for retrieving results. You should be able to incorporate any of the data that is returned into your search results output. All GSS custom variables are passed to the webskin in the structure `stparams.GSS`.
+
+Review Google API documentation for an overview: 
+
+http://code.google.com/intl/en/apis/customsearch/docs/snippets.html
