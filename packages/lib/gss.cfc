@@ -195,12 +195,19 @@
 		
 		<cfreturn stResult.OnDemandIndex.xmlAttributes.quota />
 	</cffunction>
-	
+
+	<cffunction name="getSiteDomain" access="public" output="false" returntype="string">
+
+		<cfset var domain = application.fapi.getConfig('gss', 'domain', "")>
+
+		<cfreturn domain />
+	</cffunction>
+
 	<cffunction name="getSearchResults" access="public" output="false" returntype="struct">
 		<cfargument name="key" type="string" required="false" default="#application.config.gss.key#" hint="Google API key" />
 		<cfargument name="id" type="string" required="false" default="#application.config.gss.id#" hint="Search engine ID" />
 		<cfargument name="query" type="string" required="true" hint="User's query" />
-		<cfargument name="domain" type="string" required="false" default="#application.config.gss.domain#" hint="Restrict results to this domain" />
+		<cfargument name="domain" type="string" required="false" default="#getSiteDomain()#" hint="Restrict results to this domain" />
 		<cfargument name="page" type="numeric" required="false" default="1" />
 		<cfargument name="pagesize" type="numeric" required="false" default="10" />
 		<cfargument name="sort" type="string" required="false" default="" />

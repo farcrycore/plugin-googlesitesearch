@@ -151,8 +151,8 @@
 		<!--- always filter out pages marked as not searchable --->
 		<cfset arguments.query = listappend(arguments.query,"-more:pagemap:metatags-searchable:false"," ") />
 		
-		<cfif arguments.bSiteSearch and len(application.config.gss.domain)>
-			<cfset arguments.query = listappend(arguments.query,"site:#application.config.gss.domain#"," ") />
+		<cfif arguments.bSiteSearch and len(application.fc.lib.gss.getSiteDomain())>
+			<cfset arguments.query = listappend(arguments.query,"site:#application.fc.lib.gss.getSiteDomain()#"," ") />
 		</cfif>
 		
 		<!--- Add any extra arguments as metatag filters --->
