@@ -2,11 +2,14 @@
 
 <cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 
+<cfparam name="request.mode.ajax" default="false">
+
 <!---NOTE: dont't pick up type view calls or form calls without datetimecreated (ie library pickers)--->
 <cfif 	structkeyexists(request,"stObj") AND isstruct(request.stObj) AND
 		structkeyexists(request.stobj,"datetimecreated") AND
 		NOT request.stObj.typename eq "farCOAPI" AND
 		NOT (structKeyExists(url, "view") AND url.view eq "displayLibraryTabs")
+		and not request.mode.ajax
 		>
 
 	<cfset stMeta = structnew() />
